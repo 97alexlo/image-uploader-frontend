@@ -1,10 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 export default function App() {
   const [file, setFile] = useState()
   const [description, setDescription] = useState("")
-  const [imagePath, setImagePath] = useState()
+  const [images, setImages] = useState()
+
+  useEffect(() => {
+    async function getImages() {
+      const result = await axios.get('/api/images')
+      setImages(result.data.images)
+      console.log(result.data.images)
+    }
+    getImages()
+  }, [])
 
   const submit = async event => {
     event.preventDefault()
@@ -18,7 +27,7 @@ export default function App() {
       {'Content-Type': 'multipart/form-data'}
     }
     )
-    setImagePath(result.data.imagePath)
+    setImages([result.data.image, ...images])
   }
 
   return (
@@ -36,7 +45,12 @@ export default function App() {
         ></input>
         <button type="submit">Submit</button>
       </form>
-      { imagePath && <img src={imagePath}></img> }
+      {images && images.map(img => (
+      <div key={img.id}>
+        <img src={img.file_path}/>
+        <p>{img.description}</p>
+      </div>
+      ))}
     </div>
   )
 }
